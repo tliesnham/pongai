@@ -1,6 +1,6 @@
 # AI Pong Trainer
 
-[![PyGame](https://img.shields.io/badge/PyGame-2.5.2-blue)](https://www.pygame.org)
+[![PyGame](https://img.shields.io/badge/PyGame-2.6.1-blue)](https://www.pygame.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red)](https://pytorch.org)
 
 A classic Pong implementation with AI training capabilities, featuring telemetry logging and neural network integration.
