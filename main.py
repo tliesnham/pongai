@@ -1,7 +1,7 @@
 import pygame as pg
 import csv
 
-from paddle import Paddle
+from paddle import AIPaddle, PlayerPaddle
 from ball import Ball
 
 
@@ -75,8 +75,8 @@ def main():
     pg.display.flip()
 
     # Create paddles and ball
-    player = Paddle(player=True, screen=screen.get_size())
-    ai = Paddle()
+    player = PlayerPaddle(screen=screen.get_size())
+    ai = AIPaddle(screen=screen.get_size())
     ball = Ball(radius=10, screen=screen.get_size())
     allsprites = pg.sprite.RenderPlain((player, ai, ball))
     clock = pg.time.Clock()
