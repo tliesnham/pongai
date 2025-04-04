@@ -2,5 +2,9 @@
 .DS_Store
 /venv
 /data/*
+/models/*
+!/models/.gitkeep
+/scalers/*
+!/scalers/.gitkeep
 
 !/data/.gitkeep
