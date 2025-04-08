@@ -56,8 +56,8 @@ model = PongModel(input_size=X_train.shape[1])
 
 # Define loss function and optimizer
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.0005)
-num_epochs = 50
+optimizer = optim.Adam(model.parameters(), lr=0.00001)
+num_epochs = 100
 for epoch in range(num_epochs):
     model.train()
     for inputs, labels in train_dataloader:

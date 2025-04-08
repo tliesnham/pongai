@@ -1,10 +1,15 @@
 /__pycache__
 .DS_Store
 /venv
-/data/*
+
 /models/*
 !/models/.gitkeep
+
 /scalers/*
 !/scalers/.gitkeep
 
+/data/*
 !/data/.gitkeep
+
+!/screenshots/.gitkeep
+/screenshots/*

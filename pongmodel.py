@@ -5,12 +5,12 @@ class PongModel(nn.Module):
         super().__init__()
         self.layers = nn.Sequential(
             nn.Linear(input_size, 128),
+            nn.BatchNorm1d(128),
             nn.ReLU(),
             nn.Linear(128, 64),
+            nn.BatchNorm1d(64),
             nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1)
+            nn.Linear(64, 1)
         )
     
     def forward(self, x):

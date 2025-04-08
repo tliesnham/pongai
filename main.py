@@ -5,6 +5,7 @@ from paddle import AIPaddle, PlayerPaddle, NNPaddle
 from ball import Ball
 
 LOG_DATA = True
+TAKE_SCREENSHOTS = False
 
 def save_to_csv(data_list, filename="data/pong_data.csv"):
     with open(filename, mode='w', newline='') as csvfile:
@@ -23,6 +24,9 @@ def save_to_csv(data_list, filename="data/pong_data.csv"):
         writer.writeheader()
         for data in data_list:
             writer.writerow(data)
+
+def log_label_data():
+    print('test')
 
 def log_data(data_list, player, ai, ball):
     data_list.append({
@@ -63,13 +67,13 @@ def draw_court(screen):
 
 def main():
     data_list = []
+
     pg.init()
     screen = pg.display.set_mode((800, 600), pg.SCALED, vsync=1)
     pg.display.set_caption("Pong")
     pg.mouse.set_visible(False)
 
-    background = pg.Surface(screen.get_size())
-    background = background.convert()
+    background = pg.Surface(screen.get_size()).convert()
     background.fill((0, 0, 0))
 
     screen.blit(background, (0, 0))
@@ -83,10 +87,16 @@ def main():
     clock = pg.time.Clock()
 
     running = True
-    rally = 0
+    rally, frame = 0, 0
     while running:
-        dt = clock.tick(120) / 1000.0
+        frame += 1
+        dt = clock.tick(60) / 1000.0
+
         log_data(data_list, player, ai, ball)
+
+        if TAKE_SCREENSHOTS:
+            log_label_data()
+            pg.image.save(screen, f"screenshots/frame-{frame}.jpeg")
 
         for event in pg.event.get():
             if event.type == pg.QUIT:
