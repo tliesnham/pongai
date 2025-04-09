@@ -35,7 +35,6 @@ class PongLogger:
                 "ai_score": ai.score,
                 "rally_modifier": ball.rally_modifier,
                 "screenshot": screenshot_path,
-                "frame": self.frame,
                 "player_state": player.input_state
             })
         except:
@@ -59,7 +58,6 @@ class PongLogger:
                     "ai_score",
                     "rally_modifier",
                     "screenshot",
-                    "frame",
                     "player_state"
                 ]
 
