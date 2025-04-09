@@ -2,10 +2,10 @@ import pygame as pg
 import csv
 
 from paddle import AIPaddle, PlayerPaddle, NNPaddle
+from ponglogger import PongLogger
 from ball import Ball
 
 LOG_DATA = True
-TAKE_SCREENSHOTS = False
 
 def save_to_csv(data_list, filename="data/pong_data.csv"):
     with open(filename, mode='w', newline='') as csvfile:
@@ -18,17 +18,21 @@ def save_to_csv(data_list, filename="data/pong_data.csv"):
             "ball_velocity_y",
             "player_score",
             "ai_score",
-            "rally_modifier"
+            "rally_modifier",
+            "screenshot",
+            "frame"
         ]
+
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for data in data_list:
             writer.writerow(data)
 
-def log_label_data():
-    print('test')
 
-def log_data(data_list, player, ai, ball):
+def log_data(data_list, player, ai, ball, screen, frame):
+    # Save screenshot
+    pg.image.save(screen, f"screenshots/frame-{frame}.jpeg")
+
     data_list.append({
         "ai_paddle_y": ai.rect.centery,
         "player_paddle_y": player.rect.centery,
@@ -39,6 +43,8 @@ def log_data(data_list, player, ai, ball):
         "player_score": player.score,
         "ai_score": ai.score,
         "rally_modifier": ball.rally_modifier,
+        "screenshot": f"screenshots/frame-{frame}.jpeg",
+        "frame": frame
     })
 
 def draw_score(screen, player_score, ai_score):
@@ -66,7 +72,7 @@ def draw_court(screen):
     pg.draw.line(screen, (150, 150, 150), (0, screen_height), (screen_width, screen_height), 5)
 
 def main():
-    data_list = []
+    logger = PongLogger(screenshots_dir="screenshots", data_file="data/pong_data.csv")
 
     pg.init()
     screen = pg.display.set_mode((800, 600), pg.SCALED, vsync=1)
@@ -81,22 +87,18 @@ def main():
 
     # Create paddles and ball
     player = PlayerPaddle(screen=screen.get_size())
-    ai = NNPaddle(screen=screen.get_size())
+    ai = AIPaddle(screen=screen.get_size())
     ball = Ball(radius=10, screen=screen.get_size())
     allsprites = pg.sprite.RenderPlain((player, ai, ball))
     clock = pg.time.Clock()
 
     running = True
-    rally, frame = 0, 0
+    rally = 0
     while running:
-        frame += 1
         dt = clock.tick(60) / 1000.0
 
-        log_data(data_list, player, ai, ball)
-
-        if TAKE_SCREENSHOTS:
-            log_label_data()
-            pg.image.save(screen, f"screenshots/frame-{frame}.jpeg")
+        if LOG_DATA:
+            logger.log_frame(player, ai, ball, screen)
 
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -131,8 +133,7 @@ def main():
         pg.display.flip()
 
     if LOG_DATA:
-        # Save data to CSV
-        save_to_csv(data_list)
+        logger.save_data()
     pg.quit()
 
 if __name__ == "__main__":

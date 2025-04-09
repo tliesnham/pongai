@@ -16,6 +16,8 @@ class Paddle(pg.sprite.Sprite):
         self.image = pg.Surface((self.width, self.height))
         self.image.fill((255, 255, 255))
 
+        self.input_state = 0
+
         # Get rect and position
         self.rect = self.image.get_rect()
 
@@ -40,9 +42,12 @@ class PlayerPaddle(Paddle):
         self.rect.midright = (screen[0] - 20, screen[1] // 2)
 
     def update(self, dt, ball, **kwargs):
+        self.input_state = 0
         if pg.key.get_pressed()[pg.K_w]:
+            self.input_state = 1
             self.rect.y -= 500 * dt
         elif pg.key.get_pressed()[pg.K_s]:
+            self.input_state = 2
             self.rect.y += 500 * dt
         self.out_of_bounds()
 
