@@ -1,8 +1,12 @@
 import pygame as pg
 import pandas as pd
+import numpy as np
 import torch
 
+from PIL import Image
+from torchvision import transforms
 from pongmodel import PongModel
+from cnn import SimpleCNN
 
 
 class Paddle(pg.sprite.Sprite):
@@ -116,3 +120,44 @@ class NNPaddle(Paddle):
         elif self.rect.centery > self.target_y:
             self.rect.y -= 500 * dt # Move up
         self.out_of_bounds()
+
+class CNNPaddle(Paddle):
+    def __init__(self, screen=(800, 600)):
+        super().__init__(screen=screen)
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model = SimpleCNN(num_classes=3).to(self.device)
+        self.model.load_state_dict(torch.load("models/pong_cnn.pth", map_location=self.device))
+        self.model.eval()
+        self.rect.midleft = (20, screen[1] // 2)
+
+        # Match training transforms
+        self.transform = transforms.Compose([
+            transforms.Resize((84, 84)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                               std=[0.229, 0.224, 0.225])
+        ])
+
+    def get_action(self, game_state):
+        img = Image.fromarray(game_state).convert('RGB')
+        tensor_img = self.transform(img).unsqueeze(0).to(self.device)
+
+        with torch.no_grad():
+            output = self.model(tensor_img)
+            _, predicted = torch.max(output, 1)
+        return predicted.item()
+
+    def update(self, dt, frame, **kwargs):
+        self.frame = frame
+        self.frame = np.rot90(self.frame, k=3)
+        self.frame = np.fliplr(self.frame)
+        action = self.get_action(self.frame)
+        print(f"Action: {action}")
+        
+        # Move towards the recorded target position
+        if action == 1:
+            self.rect.y += 500 * dt  # Move down
+        elif action == 2:
+            self.rect.y -= 500 * dt # Move up
+        self.out_of_bounds()
+

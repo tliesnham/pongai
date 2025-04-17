@@ -1,11 +1,12 @@
 import pygame as pg
 import csv
+import numpy as np
 
-from paddle import AIPaddle, PlayerPaddle, NNPaddle
+from paddle import AIPaddle, PlayerPaddle, NNPaddle, CNNPaddle
 from ponglogger import PongLogger
 from ball import Ball
 
-LOG_DATA = True
+LOG_DATA = False
 
 def save_to_csv(data_list, filename="data/pong_data.csv"):
     with open(filename, mode='w', newline='') as csvfile:
@@ -87,7 +88,7 @@ def main():
 
     # Create paddles and ball
     player = PlayerPaddle(screen=screen.get_size())
-    ai = AIPaddle(screen=screen.get_size())
+    ai = CNNPaddle(screen=screen.get_size())
     ball = Ball(radius=10, screen=screen.get_size())
     allsprites = pg.sprite.RenderPlain((player, ai, ball))
     clock = pg.time.Clock()
@@ -124,7 +125,8 @@ def main():
         if rally >= 3:
             ball.rally_modifier = min(1.0 + (rally * 0.03), 2.5)
         
-        allsprites.update(dt=dt, ball=ball, player=player)
+        frame = pg.surfarray.array3d(pg.display.get_surface())
+        allsprites.update(dt=dt, ball=ball, player=player, frame=frame)
 
         screen.blit(background, (0, 0))
         draw_court(screen)
