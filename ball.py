@@ -5,7 +5,7 @@ import random
 class Ball(pg.sprite.Sprite):
     GOAL_EVENT = pg.USEREVENT + 1
 
-    def __init__(self, radius=10, screen=(800, 600)):
+    def __init__(self, radius=10, screen=(600, 600)):
         pg.sprite.Sprite.__init__(self)
         self.rally_modifier = 1.0
         # Screen dimensions
@@ -19,7 +19,7 @@ class Ball(pg.sprite.Sprite):
         # Draw red circle to the surface
         pg.draw.circle(
             self.image,
-            (255, 0, 0),
+            (255, 255, 255),
             (self.radius, self.radius),
             self.radius
         )
@@ -28,10 +28,15 @@ class Ball(pg.sprite.Sprite):
         self.rect = self.image.get_rect(center=(self.screen_width // 2, self.screen_height // 2))
 
         # Add movement attributes
-        self.velocity = [300, 0]  # Horizontal movement only when spawned, player starts
+        self.velocity = [250, 0]  # Horizontal movement only when spawned, player starts
+
+        self.collision_cooldown = 0
+        self.cooldown_time = 0.2
         
     def update(self, dt, **kwargs):
-        """Basic movement logic"""
+        if self.collision_cooldown > 0:
+            self.collision_cooldown -= dt
+
         self.rect.x += self.velocity[0] * dt
         self.rect.y += self.velocity[1] * dt
         
@@ -42,26 +47,29 @@ class Ball(pg.sprite.Sprite):
             self.velocity[1] = min(-1, -abs(self.velocity[1]))
 
         # Check for goal
-        if self.rect.left <= 30:
+        if self.rect.left <= 0:
             pg.event.post(pg.event.Event(Ball.GOAL_EVENT, scorer="player"))
             self.reset()
-        elif self.rect.right >= self.screen_width - 30:
+        elif self.rect.right >= self.screen_width:
             pg.event.post(pg.event.Event(Ball.GOAL_EVENT, scorer="ai"))
             self.reset()
     
     def reset(self):
         """Recentre after point"""
         self.rect.center = (self.screen_width // 2, self.screen_height // 2)
-        self.velocity = [random.choice([-300, 300]), 0]
+        self.velocity = [random.choice([-250, 250]), 0]
     
     def bounce(self):
         """Reverse and randomise the y velocity"""
-        if self.velocity[0] > 0:
-            self.velocity[0] = -300
-        else:
-            self.velocity[0] = 300
-        self.velocity[0] *= self.rally_modifier
-        self.velocity[1] = random.randint(-400, 400) * self.rally_modifier
+        if self.collision_cooldown <= 0:
+            if self.velocity[0] > 0:
+                self.velocity[0] = -250
+            else:
+                self.velocity[0] = 250
+            self.velocity[0] *= self.rally_modifier
+            self.velocity[1] = random.randint(-350, 350) * self.rally_modifier
        
-        if self.velocity[1] == 0:
-            self.velocity[1] = 1 * self.rally_modifier
+            if self.velocity[1] == 0:
+                self.velocity[1] = 1 * self.rally_modifier
+
+            self.collision_cooldown = self.cooldown_time

@@ -1,82 +1,18 @@
 import pygame as pg
 import csv
-import numpy as np
 
-from paddle import AIPaddle, PlayerPaddle, NNPaddle, CNNPaddle
+from paddle import AIPaddle, PlayerPaddle
 from ponglogger import PongLogger
 from ball import Ball
+from utils import draw_score, draw_court
 
-LOG_DATA = False
-
-def save_to_csv(data_list, filename="data/pong_data.csv"):
-    with open(filename, mode='w', newline='') as csvfile:
-        fieldnames = [
-            "ai_paddle_y",
-            "player_paddle_y",
-            "ball_x",
-            "ball_y",
-            "ball_velocity_x",
-            "ball_velocity_y",
-            "player_score",
-            "ai_score",
-            "rally_modifier",
-            "screenshot",
-            "frame"
-        ]
-
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for data in data_list:
-            writer.writerow(data)
-
-
-def log_data(data_list, player, ai, ball, screen, frame):
-    # Save screenshot
-    pg.image.save(screen, f"screenshots/frame-{frame}.jpeg")
-
-    data_list.append({
-        "ai_paddle_y": ai.rect.centery,
-        "player_paddle_y": player.rect.centery,
-        "ball_x": ball.rect.x,
-        "ball_y": ball.rect.y,
-        "ball_velocity_x": ball.velocity[0],
-        "ball_velocity_y": ball.velocity[1],
-        "player_score": player.score,
-        "ai_score": ai.score,
-        "rally_modifier": ball.rally_modifier,
-        "screenshot": f"screenshots/frame-{frame}.jpeg",
-        "frame": frame
-    })
-
-def draw_score(screen, player_score, ai_score):
-    font = pg.font.SysFont("Arial", 36)
-    player_text = font.render(f"Player: {player_score}", True, (255, 255, 255))
-    ai_text = font.render(f"AI: {ai_score}", True, (255, 255, 255))
-
-    screen.blit(player_text, (screen.get_width() - ai_text.get_width() - 80, 10))
-    screen.blit(ai_text, (10, 10))
-
-def draw_court(screen):
-    screen_width, screen_height = screen.get_size()
-    dash_length = 10
-    for y in range(0, screen_height, 20):
-        pg.draw.line(
-            screen,
-            (150, 150, 150),
-            (screen_width // 2, y),
-            (screen_width // 2, y + dash_length),
-            3
-        )
-
-    # Draw top and bottom lines
-    pg.draw.line(screen, (150, 150, 150), (0, 0), (screen_width, 0), 5)
-    pg.draw.line(screen, (150, 150, 150), (0, screen_height), (screen_width, screen_height), 5)
+LOG_DATA = True
 
 def main():
     logger = PongLogger(screenshots_dir="screenshots", data_file="data/pong_data.csv")
 
     pg.init()
-    screen = pg.display.set_mode((800, 600), pg.SCALED, vsync=1)
+    screen = pg.display.set_mode((600, 600), vsync=1)
     pg.display.set_caption("Pong")
     pg.mouse.set_visible(False)
 
@@ -88,8 +24,8 @@ def main():
 
     # Create paddles and ball
     player = PlayerPaddle(screen=screen.get_size())
-    ai = CNNPaddle(screen=screen.get_size())
-    ball = Ball(radius=10, screen=screen.get_size())
+    ai = AIPaddle(screen=screen.get_size())
+    ball = Ball(radius=4, screen=screen.get_size())
     allsprites = pg.sprite.RenderPlain((player, ai, ball))
     clock = pg.time.Clock()
 
@@ -99,7 +35,8 @@ def main():
         dt = clock.tick(60) / 1000.0
 
         if LOG_DATA:
-            logger.log_frame(player, ai, ball, screen)
+            if frame % 6 == 0: # Log every 6th frame
+                logger.log_frame(player, ai, ball, screen)
 
         for event in pg.event.get():
             if event.type == pg.QUIT:

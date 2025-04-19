@@ -10,13 +10,13 @@ from cnn import SimpleCNN
 
 
 class Paddle(pg.sprite.Sprite):
-    def __init__(self, screen=(800, 600)):
+    def __init__(self, screen=(500, 500)):
         pg.sprite.Sprite.__init__(self)
         self.score = 0
 
         # Create paddle surface
-        self.width = 20
-        self.height = 100
+        self.width = 5
+        self.height = 40
         self.image = pg.Surface((self.width, self.height))
         self.image.fill((255, 255, 255))
 
@@ -41,7 +41,7 @@ class Paddle(pg.sprite.Sprite):
             self.rect.bottom = pg.display.get_surface().get_height() - court_line_width
 
 class PlayerPaddle(Paddle):
-    def __init__(self, screen=(800, 600)):
+    def __init__(self, screen=(500, 500)):
         super().__init__(screen=screen)
         self.rect.midright = (screen[0] - 20, screen[1] // 2)
 
@@ -56,7 +56,7 @@ class PlayerPaddle(Paddle):
         self.out_of_bounds()
 
 class AIPaddle(Paddle):
-    def __init__(self, screen=(800, 600)):
+    def __init__(self, screen=(500, 500)):
         super().__init__(screen=screen)
         self.reaction_delay = 0  # milliseconds
         self.last_reaction_time = 0
@@ -78,7 +78,7 @@ class AIPaddle(Paddle):
         self.out_of_bounds()
 
 class NNPaddle(Paddle):
-    def __init__(self, screen=(800, 600)):
+    def __init__(self, screen=(500, 500)):
         super().__init__(screen=screen)
         self.screen = screen
         self.model = PongModel(5)
@@ -122,7 +122,7 @@ class NNPaddle(Paddle):
         self.out_of_bounds()
 
 class CNNPaddle(Paddle):
-    def __init__(self, screen=(800, 600)):
+    def __init__(self, screen=(500, 500)):
         super().__init__(screen=screen)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model = SimpleCNN(num_classes=3).to(self.device)
@@ -152,7 +152,6 @@ class CNNPaddle(Paddle):
         self.frame = np.rot90(self.frame, k=3)
         self.frame = np.fliplr(self.frame)
         action = self.get_action(self.frame)
-        print(f"Action: {action}")
         
         # Move towards the recorded target position
         if action == 1:
